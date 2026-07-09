@@ -5,31 +5,30 @@ const { Sequelize } = require("sequelize");
 
 const dbUrl = process.env.DB_URL;
 
-const sequelize = dbUrl
-  ? new Sequelize(dbUrl, {
-      dialect: "postgres",
-      dialectOptions: {
-        ssl: {
-          require: true,
-          rejectUnauthorized: false
-        }
-      },
-      logging: false
-    })
-  : null;
-
-if (sequelize) {
-  (async () => {
-    try {
-      await sequelize.authenticate();
-      console.log("Database Connected Successfully");
-    } catch (err) {
-      console.error("Connection Error:", err);
-    }
-  })();
-} else {
-  console.warn("DB_URL not set. Starting without a database connection.");
+if (!dbUrl) {
+  console.error("❌ DB_URL environment variable is not set.");
+  process.exit(1);
 }
 
+const sequelize = new Sequelize(dbUrl, {
+  dialect: "postgres",
+  dialectOptions: {
+    ssl: {
+      require: true,
+      rejectUnauthorized: false,
+    },
+  },
+  logging: false,
+});
+
+(async () => {
+  try {
+    await sequelize.authenticate();
+    console.log("✅ Database Connected Successfully");
+  } catch (err) {
+    console.error("❌ Database Connection Error:", err);
+    process.exit(1);
+  }
+})();
 
 module.exports = sequelize;
