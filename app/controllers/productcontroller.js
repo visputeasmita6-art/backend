@@ -1,74 +1,83 @@
-let products = [];
-let nextId = 1;
+const Product = require("../models/products");
 
 const productController = {
-  getProducts(req, res) {
-    res.json(products);
-  },
-
-  getProduct(req, res) {
-    const product = products.find((item) => item.id === Number(req.params.id));
-
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
+  async getProducts(req, res) {
+    try {
+      const items = await Product.findAll();
+      return res.json(items);
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ message: "Failed to fetch products" });
     }
-
-    return res.json(product);
   },
 
-  createProduct(req, res) {
-    const { name, price, category } = req.body;
+  async getProduct(req, res) {
+    try {
+      const product = await Product.findByPk(req.params.id);
+      if (!product) return res.status(404).json({ message: "Product not found" });
+      return res.json(product);
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ message: "Failed to fetch product" });
+    }
+  },
 
+  async createProduct(req, res) {
+    const { name, price, category } = req.body;
     if (!name || !price || !category) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    const product = {
-      id: nextId++,
-      name,
-      price,
-      category
-    };
-
-    products.push(product);
-    return res.status(201).json(product);
+    try {
+      const created = await Product.create({ name, price, category });
+      return res.status(201).json(created);
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ message: "Failed to create product" });
+    }
   },
 
-  updateProduct(req, res) {
-    const product = products.find((item) => item.id === Number(req.params.id));
+  async updateProduct(req, res) {
+    try {
+      const product = await Product.findByPk(req.params.id);
+      if (!product) return res.status(404).json({ message: "Product not found" });
 
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
+      const { name, price, category } = req.body;
+      if (name !== undefined) product.name = name;
+      if (price !== undefined) product.price = price;
+      if (category !== undefined) product.category = category;
+      await product.save();
+      return res.json(product);
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ message: "Failed to update product" });
     }
-
-    const { name, price, category } = req.body;
-    product.name = name ?? product.name;
-    product.price = price ?? product.price;
-    product.category = category ?? product.category;
-
-    return res.json(product);
   },
 
-  patchProduct(req, res) {
-    const product = products.find((item) => item.id === Number(req.params.id));
+  async patchProduct(req, res) {
+    try {
+      const product = await Product.findByPk(req.params.id);
+      if (!product) return res.status(404).json({ message: "Product not found" });
 
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
+      Object.assign(product, req.body);
+      await product.save();
+      return res.json(product);
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ message: "Failed to patch product" });
     }
-
-    Object.assign(product, req.body);
-    return res.json(product);
   },
 
-  deleteProduct(req, res) {
-    const index = products.findIndex((item) => item.id === Number(req.params.id));
-
-    if (index === -1) {
-      return res.status(404).json({ message: "Product not found" });
+  async deleteProduct(req, res) {
+    try {
+      const product = await Product.findByPk(req.params.id);
+      if (!product) return res.status(404).json({ message: "Product not found" });
+      await product.destroy();
+      return res.json({ message: "Product deleted successfully" });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ message: "Failed to delete product" });
     }
-
-    products.splice(index, 1);
-    return res.json({ message: "Product deleted successfully" });
   }
 };
 

@@ -1,7 +1,13 @@
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 
-const productRoutes = require("./app/routes/productRoutes");
+// initialize DB connection (Sequelize)
+const sequelize = require("./app/config/DB");
+
+const productRoutes = require("./app/routes/productroutes");
+
+
 
 const app = express();
 
@@ -15,8 +21,25 @@ app.get("/", (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`Server Running on http://localhost:${PORT}`);
-});
+// sync models and stand art server
+const start = async () => {
+  try {
+    if (sequelize) {
+      await sequelize.sync();
+      console.log("Database synchronized");
+    } else {
+      console.warn("No database connection available; starting without DB");
+    }
+
+    app.listen(PORT, () => {
+      console.log(`Server Running on http://localhost:${PORT}`);
+    });
+  } catch (err) {
+    console.error("Failed to start server:", err);
+    process.exit(1);
+  }
+};
+
+start();
 
 module.exports = app;
