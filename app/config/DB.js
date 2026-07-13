@@ -1,5 +1,12 @@
 const path = require("path");
-require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
+const fs = require("fs");
+
+// Load local .env only when it exists (safe for Render where env vars are provided)
+const localEnvPath = path.resolve(__dirname, "../../.env");
+if (fs.existsSync(localEnvPath)) {
+  require("dotenv").config({ path: localEnvPath });
+}
+
 
 const { Sequelize } = require("sequelize");
 
