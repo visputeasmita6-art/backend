@@ -11,6 +11,15 @@ app.use(express.json());
 
 app.use("/products", productRoutes);
 
+app.get("/health", async (req, res) => {
+  try {
+    await sequelize.authenticate();
+    res.json({ ok: true, db: "connected" });
+  } catch (err) {
+    res.status(500).json({ ok: false, db: "disconnected", error: err?.message });
+  }
+});
+
 app.get("/", (req, res) => {
   res.json({ message: "Backend is running" });
 });

@@ -4,6 +4,7 @@ const productController = {
   async getProducts(req, res) {
     try {
       const items = await Product.findAll();
+      console.log("📥 getProducts count:", items?.length);
       return res.json(items);
     } catch (err) {
       console.error(err);
