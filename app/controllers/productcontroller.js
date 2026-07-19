@@ -69,7 +69,7 @@ const productController = {
     }
   },
 
-  async deleteProduct(req, res) {
+  async deleteProduct(req, res){
     try {
       const product = await Product.findByPk(req.params.id);
       if (!product) return res.status(404).json({ message: "Product not found" });
